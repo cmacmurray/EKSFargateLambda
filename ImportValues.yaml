@@ -1,0 +1,56 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+
+Resources:
+  
+  Resources:
+    HiGuys:
+      Type: Custom::Greeting
+      Properties:
+        !GetAtt "MyLambdaFunction.Arn"
+
+  MyLambdaFunctionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: [lambda.amazonaws.com]
+            Action: ['sts:AssumeRole']
+      Path: /
+      Policies:
+        - PolicyName: root
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action: ['logs:*']
+                Resource: 'arn:aws:logs:*:*:*'
+
+  MyLambdaFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      Role: !GetAtt MyLambdaFunctionRole.Arn
+      Environment:
+        Variables:
+          TestValue: "hi guys"
+      Handler: handlers.handle_event
+      Runtime: python3.6
+      Code:
+        ZipFile: |
+          import os
+          import cnfresponse
+          import boto
+          import awscli
+          import eksctl
+          def handle_event(event, context):
+              return os.environ['TestValue']
+            
+Outputs:
+  RandomStringFromRandomStringResource:
+    Description: "Greeting returned by aws Lambda function"
+    Value: !GetAtt MyLambdaFunction.Greeting
+  StackName:
+    Value: !Ref AWS::StackName

@@ -1,0 +1,80 @@
+---
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'Amazon EKS Service Role'
+Parameters:
+  ClusterName:
+    Type: String
+    Default: 'Fred'
+
+Resources:
+
+  eksServiceRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service:
+            - eks.amazonaws.com
+          Action:
+          - sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AmazonEKSServicePolicy
+        - arn:aws:iam::aws:policy/AmazonEKSClusterPolicy
+
+  eksClusterGeneratorExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: [lambda.amazonaws.com]
+            Action: ['sts:AssumeRole']
+      Path: /
+      Policies:
+        - PolicyName: root
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action: ['logs:*']
+                Resource: 'arn:aws:logs:*:*:*'
+
+  eksClusterGenerator:
+    Type: AWS::Lambda::Function
+    Properties:
+     Handler: index.handler
+     Runtime: python3.6
+     Role: !GetAtt eksClusterGeneratorExecutionRole.Arn
+     Code:
+      ZipFile: |
+        import boto3
+        client = boto3.client('cluster')
+
+        response = client.create_cluster(
+            name = !Ref ${ClusterName} 
+            version = '1.4.9',
+            roleArn = 'arn:aws:iam::099454879218:role/EKSFargatLambda-eksServiceRole-6J5HJ7O6VVGT',
+            resourcesVpcConfig={
+                'subnetIds': [
+                    'subnet-0bf57357',
+                    'subnet-192b7e53',
+                    'subnej-2b1b6424'
+                ],
+                 'securityGroupIds' : [
+                    'sg-dcc5a891'
+                    ]
+            }
+        )
+
+Outputs:
+
+  RoleArn:
+    Description: The role that Amazon EKS will use to create AWS resources for Kubernetes clusters
+    Value: !GetAtt eksServiceRole.Arn
+    Export:
+      Name: !Sub "${AWS::StackName}-RoleArn"
