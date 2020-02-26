@@ -82,7 +82,7 @@ Resources:
     Properties:
       VpcId: 
         Ref: "Vpc"
-      CidrBlock: !Select [ 1, !Cidr [ !Ref CidrBlock, 9, 8 ]]
+      CidrBlock: !Select [ 2, !Cidr [ !Ref CidrBlock, 9, 8 ]]
       AvailabilityZone: !Select
         - 0
         - Fn::GetAZs:  !Ref 'AWS::Region'
