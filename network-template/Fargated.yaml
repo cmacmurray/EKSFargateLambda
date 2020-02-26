@@ -1,0 +1,176 @@
+
+---
+Parameters:
+  LatestAmiId:
+    Type: 'AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>'
+    Default: '/aws/service/ami-amazon-linux-latest/amzn2-ami-hvm-x86_64-gp2'
+
+  CidrBlock:
+    Type: String
+    Default: "10.0.0.0/16"
+
+Resources:
+
+  KmsKey:
+    Type: "AWS::KMS::Key"
+    Properties:
+      Description:  KmsKey
+      Enabled: true
+      EnableKeyRotation: false
+      KeyPolicy:
+        "Fn::Sub": |
+              {
+                "Version": "2012-10-17",
+                "Statement": [
+                {
+                    "Sid": "Enable IAM User Permissions",
+                    "Effect": "Allow",
+                    "Principal": {
+                      "AWS": "arn:aws:iam::${AWS::AccountId}:root"
+                    },
+                    "Action": "kms:*",
+                    "Resource": "*"
+                }
+                ]
+              }
+      Tags:
+        -
+          Key: "Name"
+          Value: "CentrellisKmsKey"
+  Vpc:
+    Type: "AWS::EC2::VPC"
+    Properties:
+      CidrBlock: !Ref CidrBlock
+      InstanceTenancy: "default"
+      EnableDnsSupport: "true"
+      EnableDnsHostnames: "true"
+      Tags:
+        -
+          Key: "Name"
+          Value: "Vpc"
+          
+  PublicSubnet0:
+    Type: "AWS::EC2::Subnet"
+    Properties:
+      VpcId: 
+        Ref: "Vpc"
+      CidrBlock: !Select [ 0, !Cidr [ !Ref CidrBlock, 9, 8 ]]
+      AvailabilityZone: !Select
+        - 0
+        - Fn::GetAZs:  !Ref 'AWS::Region'
+      Tags: 
+        - 
+          Key: "Name"
+          Value: "PublicSubnet0"
+          
+  PublicSubnet1:
+    Type: "AWS::EC2::Subnet"
+    Properties:
+      VpcId: 
+        Ref: "Vpc"
+      CidrBlock: !Select [ 1, !Cidr [ !Ref CidrBlock, 9, 8 ]]
+      AvailabilityZone: !Select
+        - 0
+        - Fn::GetAZs:  !Ref 'AWS::Region'
+      Tags: 
+        - 
+          Key: "Name"
+          Value: "PublicSubnet1"
+
+  PublicSubnet2:
+    Type: "AWS::EC2::Subnet"
+    Properties:
+      VpcId: 
+        Ref: "Vpc"
+      CidrBlock: !Select [ 1, !Cidr [ !Ref CidrBlock, 9, 8 ]]
+      AvailabilityZone: !Select
+        - 0
+        - Fn::GetAZs:  !Ref 'AWS::Region'
+      Tags: 
+        - 
+          Key: "Name"
+          Value: "PublicSubnet2"
+
+  ClusterSubnet0:
+    Type: "AWS::EC2::Subnet"
+    Properties:
+      VpcId: 
+        Ref: "Vpc"
+      CidrBlock: !Select [ 3, !Cidr [ !Ref CidrBlock, 9, 8 ]]
+      AvailabilityZone: !Select
+        - 0
+        - Fn::GetAZs:  !Ref 'AWS::Region'
+      Tags: 
+        - 
+          Key: "Name"
+          Value: "ClusterSubnet0"
+          
+  ClusterSubnet1:
+    Type: "AWS::EC2::Subnet"
+    Properties:
+      VpcId: 
+        Ref: "Vpc"
+      CidrBlock: !Select [ 4, !Cidr [ !Ref CidrBlock, 9, 8 ]]
+      AvailabilityZone: !Select
+        - 0
+        - Fn::GetAZs:  !Ref 'AWS::Region'
+      Tags: 
+        - 
+          Key: "Name"
+          Value: "ClusterSubnet1"
+
+  ClusterSubnet2:
+    Type: "AWS::EC2::Subnet"
+    Properties:
+      VpcId: 
+        Ref: "Vpc"
+      CidrBlock: !Select [ 5, !Cidr [ !Ref CidrBlock, 9, 8 ]]
+      AvailabilityZone: !Select
+        - 0
+        - Fn::GetAZs:  !Ref 'AWS::Region'
+      Tags: 
+        - 
+          Key: "Name"
+          Value: "ClusterSubnet2"
+
+  DatabaseSubnet0:
+    Type: "AWS::EC2::Subnet"
+    Properties:
+      VpcId: 
+        Ref: "Vpc"
+      CidrBlock: !Select [ 6, !Cidr [ !Ref CidrBlock, 9, 8 ]]
+      AvailabilityZone: !Select
+        - 0
+        - Fn::GetAZs:  !Ref 'AWS::Region'
+      Tags: 
+        - 
+          Key: "Name"
+          Value: "DatabaseSubnet0"
+          
+  DatabaseSubnet1:
+    Type: "AWS::EC2::Subnet"
+    Properties:
+      VpcId: 
+        Ref: "Vpc"
+      CidrBlock: !Select [ 7, !Cidr [ !Ref CidrBlock, 9, 8 ]]
+      AvailabilityZone: !Select
+        - 0
+        - Fn::GetAZs:  !Ref 'AWS::Region'
+      Tags: 
+        - 
+          Key: "Name"
+          Value: "DatabaseSubnet1"
+
+  DatabaseSubnet2:
+    Type: "AWS::EC2::Subnet"
+    Properties:
+      VpcId: 
+        Ref: "Vpc"
+      CidrBlock: !Select [ 8, !Cidr [ !Ref CidrBlock, 9, 8 ]]
+      AvailabilityZone: !Select
+        - 0
+        - Fn::GetAZs:  !Ref 'AWS::Region'
+      Tags: 
+        - 
+          Key: "Name"
+          Value: "DatabaseSubnet2"

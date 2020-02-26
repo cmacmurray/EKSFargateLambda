@@ -1,0 +1,1241 @@
+---
+Parameters:
+  LatestAmiId:
+    Type: 'AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>'
+    Default: '/aws/service/ami-amazon-linux-latest/amzn2-ami-hvm-x86_64-gp2'
+Resources:
+
+  KmsKey:
+    Type: "AWS::KMS::Key"
+    Properties:
+      Description: Centrellis KmsKey
+      Enabled: true
+      EnableKeyRotation: false
+      KeyPolicy:
+        "Fn::Sub": |
+              {
+                "Version": "2012-10-17",
+                "Statement": [
+                {
+                    "Sid": "Enable IAM User Permissions",
+                    "Effect": "Allow",
+                    "Principal": {
+                      "AWS": "arn:aws:iam::${AWS::AccountId}:root"
+                    },
+                    "Action": "kms:*",
+                    "Resource": "*"
+                }
+                ]
+              }
+      Tags:
+        -
+          Key: "Name"
+          Value: "CentrellisKmsKey"
+
+  Vpc:
+    Type: "AWS::EC2::VPC"
+    Properties:
+      CidrBlock: "10.0.0.0/16"
+      InstanceTenancy: "default"
+      EnableDnsSupport: "true"
+      EnableDnsHostnames: "false"
+      Tags:
+        -
+          Key: "Name"
+          Value: "Vpc"
+          
+  PublicSubnet1:
+    Type: "AWS::EC2::Subnet"
+    Properties:
+      VpcId: 
+        Ref: "Vpc"
+      CidrBlock: "10.0.1.0/24"
+      AvailabilityZone: !Select
+        - 0
+        - Fn::GetAZs:  !Ref 'AWS::Region'
+      Tags: 
+        - 
+          Key: "Name"
+          Value: "PublicSubnet1"
+
+  PublicSubnet2:
+    Type: "AWS::EC2::Subnet"
+    Properties:
+      VpcId: 
+        Ref: "Vpc"
+      CidrBlock: "10.0.2.0/24"
+      AvailabilityZone: !Select
+        - 1
+        - Fn::GetAZs: !Ref 'AWS::Region'
+      Tags: 
+        - 
+          Key: "Name"
+          Value: "PublicSubnet2"
+          
+  PublicSubnet3:
+    Type: "AWS::EC2::Subnet"
+    Properties:
+      VpcId: 
+        Ref: "Vpc"
+      CidrBlock: "10.0.3.0/24"
+      AvailabilityZone: !Select
+        - 2
+        - Fn::GetAZs: !Ref 'AWS::Region'
+      Tags: 
+        - 
+          Key: "Name"
+          Value: "PublicSubnet3"
+
+  BatchJobSubnet1:
+    Type: "AWS::EC2::Subnet"
+    Properties:
+      VpcId: 
+        Ref: "Vpc"
+      CidrBlock: "10.0.101.0/24"
+      AvailabilityZone: !Select
+        - 0
+        - Fn::GetAZs: !Ref 'AWS::Region'
+      Tags: 
+        - 
+          Key: "Name"
+          Value: "BatchJobSubnet1"
+
+  BatchJobSubnet2:
+    Type: "AWS::EC2::Subnet"
+    Properties:
+      VpcId: 
+        Ref: "Vpc"
+      CidrBlock: "10.0.102.0/24"
+      AvailabilityZone: !Select
+        - 1
+        - Fn::GetAZs: !Ref 'AWS::Region'
+      Tags: 
+        - 
+          Key: "Name"
+          Value: "BatchJobSubnet2"
+          
+  BatchJobSubnet3:
+    Type: "AWS::EC2::Subnet"
+    Properties:
+      VpcId: 
+        Ref: "Vpc"
+      CidrBlock: "10.0.103.0/24"
+      AvailabilityZone: !Select
+        - 2
+        - Fn::GetAZs: !Ref 'AWS::Region'
+      Tags: 
+        - 
+          Key: "Name"
+          Value: "BatchJobSubnet3"
+
+  ManagementJobSubnet1:
+    Type: "AWS::EC2::Subnet"
+    Properties:
+      VpcId: 
+        Ref: "Vpc"
+      CidrBlock: "10.0.201.0/24"
+      AvailabilityZone: !Select
+        - 0
+        - Fn::GetAZs: !Ref 'AWS::Region'
+      Tags: 
+        - 
+          Key: "Name"
+          Value: "ManagementJobSubnet1"
+
+  ManagementJobSubnet2:
+    Type: "AWS::EC2::Subnet"
+    Properties:
+      VpcId: 
+        Ref: "Vpc"
+      CidrBlock: "10.0.202.0/24"
+      AvailabilityZone: !Select
+        - 1
+        - Fn::GetAZs: !Ref 'AWS::Region'
+      Tags: 
+        - 
+          Key: "Name"
+          Value: "ManagementJobSubnet2"
+          
+  ManagementJobSubnet3:
+    Type: "AWS::EC2::Subnet"
+    Properties:
+      VpcId: 
+        Ref: "Vpc"
+      CidrBlock: "10.0.203.0/24"
+      AvailabilityZone: !Select
+        - 2
+        - Fn::GetAZs: !Ref 'AWS::Region'
+      Tags: 
+        - 
+          Key: "Name"
+          Value: "ManagementJobSubnet3"
+  AutomatedAbstractionSubnet1:
+    Type: "AWS::EC2::Subnet"
+    Properties:
+      VpcId: 
+        Ref: "Vpc"
+      CidrBlock: "10.0.4.0/24"
+      AvailabilityZone: !Select
+        - 0
+        - Fn::GetAZs: !Ref 'AWS::Region'
+      Tags: 
+        - 
+          Key: "Name"
+          Value: "AutomatedAbstractionSubnet1"
+
+  AutomatedAbstractionSubnet2:
+    Type: "AWS::EC2::Subnet"
+    Properties:
+      VpcId: 
+        Ref: "Vpc"
+      CidrBlock: "10.0.5.0/24"
+      AvailabilityZone: !Select
+        - 1
+        - Fn::GetAZs: !Ref 'AWS::Region'
+      Tags: 
+        - 
+          Key: "Name"
+          Value: "AutomatedAbstractionSubnet2"
+          
+  AutomatedAbstractionSubnet3:
+    Type: "AWS::EC2::Subnet"
+    Properties:
+      VpcId: 
+        Ref: "Vpc"
+      CidrBlock: "10.0.6.0/24"
+      AvailabilityZone: !Select
+        - 2
+        - Fn::GetAZs: !Ref 'AWS::Region'
+      Tags: 
+        - 
+          Key: "Name"
+          Value: "AutomatedAbstractionSubnet3"
+          
+  CuratedAbstractionSubnet1:
+    Type: "AWS::EC2::Subnet"
+    Properties:
+      VpcId: 
+        Ref: "Vpc"
+      CidrBlock: "10.0.7.0/24"
+      AvailabilityZone: !Select
+        - 0
+        - Fn::GetAZs: !Ref 'AWS::Region'
+      Tags: 
+        - 
+          Key: "Name"
+          Value: "CuratedAbstractionSubnet1"
+
+  CuratedAbstractionSubnet2:
+    Type: "AWS::EC2::Subnet"
+    Properties:
+      VpcId: 
+        Ref: "Vpc"
+      CidrBlock: "10.0.8.0/24"
+      AvailabilityZone: !Select
+        - 1
+        - Fn::GetAZs: !Ref 'AWS::Region'
+      Tags: 
+        - 
+          Key: "Name"
+          Value: "CuratedAbstractionSubnet2"
+          
+  CuratedAbstractionSubnet3:
+    Type: "AWS::EC2::Subnet"
+    Properties:
+      VpcId: 
+        Ref: "Vpc"
+      CidrBlock: "10.0.9.0/24"
+      AvailabilityZone: !Select
+        - 2
+        - Fn::GetAZs: !Ref 'AWS::Region'
+      Tags: 
+        - 
+          Key: "Name"
+          Value: "CuratedAbstractionSubnet3"
+
+  DataExtractionSubnet1:
+    Type: "AWS::EC2::Subnet"
+    Properties:
+      VpcId: 
+        Ref: "Vpc"
+      CidrBlock: "10.0.10.0/24"
+      AvailabilityZone: !Select
+        - 0
+        - Fn::GetAZs: !Ref 'AWS::Region'
+      Tags: 
+        - 
+          Key: "Name"
+          Value: "DataExtractionSubnet1"
+
+  DataExtractionSubnet2:
+    Type: "AWS::EC2::Subnet"
+    Properties:
+      VpcId: 
+        Ref: "Vpc"
+      CidrBlock: "10.0.11.0/24"
+      AvailabilityZone: !Select
+        - 1
+        - Fn::GetAZs: !Ref 'AWS::Region'
+      Tags: 
+        - 
+          Key: "Name"
+          Value: "DataExtractionSubnet2"
+          
+  DataExtractionSubnet3:
+    Type: "AWS::EC2::Subnet"
+    Properties:
+      VpcId: 
+        Ref: "Vpc"
+      CidrBlock: "10.0.12.0/24"
+      AvailabilityZone: !Select
+        - 2
+        - Fn::GetAZs: !Ref 'AWS::Region'
+      Tags: 
+        - 
+          Key: "Name"
+          Value: "DataExtractionSubnet3"
+
+  PublicSubnetACL:
+    Properties:
+      Tags: 
+        - 
+          Key: "Name"
+          Value: "PublicSubnetACL"
+         
+  DatabaseSubnet1:
+    Type: "AWS::EC2::Subnet"
+    Properties:
+      VpcId: 
+        Ref: "Vpc"
+      CidrBlock: "10.0.13.0/24"
+      AvailabilityZone: !Select
+        - 0
+        - Fn::GetAZs: !Ref 'AWS::Region'
+      Tags: 
+        - 
+          Key: "Name"
+          Value: "DatabaseSubnet1"
+
+  DatabaseSubnet2:
+    Type: "AWS::EC2::Subnet"
+    Properties:
+      VpcId: 
+        Ref: "Vpc"
+      CidrBlock: "10.0.14.0/24"
+      AvailabilityZone: !Select
+        - 1
+        - Fn::GetAZs: !Ref 'AWS::Region'
+      Tags: 
+        - 
+          Key: "Name"
+          Value: "DatabaseSubnet2"
+          
+  DatabaseSubnet3:
+    Type: "AWS::EC2::Subnet"
+    Properties:
+      VpcId: 
+        Ref: "Vpc"
+      CidrBlock: "10.0.15.0/24"
+      AvailabilityZone: !Select
+        - 2
+        - Fn::GetAZs: !Ref 'AWS::Region'
+      Tags: 
+        - 
+          Key: "Name"
+          Value: "DatabaseSubnet3"
+
+  BatchJobSubnet1:
+    Type: "AWS::EC2::Subnet"
+    Properties:
+      VpcId: 
+        Ref: "Vpc"
+      CidrBlock: "10.0.16.0/24"
+      AvailabilityZone: !Select
+        - 0
+        - Fn::GetAZs: !Ref 'AWS::Region'
+      Tags: 
+        - 
+          Key: "Name"
+          Value: "BatchJobSubnet1"
+
+  BatchJobSubnet2:
+    Type: "AWS::EC2::Subnet"
+    Properties:
+      VpcId: 
+        Ref: "Vpc"
+      CidrBlock: "10.0.17.0/24"
+      AvailabilityZone: !Select
+        - 1
+        - Fn::GetAZs: !Ref 'AWS::Region'
+      Tags: 
+        - 
+          Key: "Name"
+          Value: "BatchJobSubnet2"
+          
+  BatchJobSubnet3:
+    Type: "AWS::EC2::Subnet"
+    Properties:
+      VpcId: 
+        Ref: "Vpc"
+      CidrBlock: "10.0.18.0/24"
+      AvailabilityZone: !Select
+        - 2
+        - Fn::GetAZs: !Ref 'AWS::Region'
+      Tags: 
+        -
+          Key: "Name"
+          Value: "BatchJobSubnet3"
+
+  PublicSubnetACL:
+    Type: AWS::EC2::NetworkAcl
+    Properties:
+      VpcId: 
+        Ref: "Vpc"
+      Tags: 
+        - 
+          Key: "Name"
+          Value: "PublicSubnetACL"
+
+  PrivateRouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: 
+        Ref: "Vpc"
+      Tags: 
+        - 
+          Key: "Name"
+          Value: "PrivateRouteTable"
+      
+  PublicRouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: 
+        Ref: "Vpc"
+      Tags: 
+        - 
+          Key: "Name"
+          Value: "PublicRouteTable"
+
+  AutomatedAbstractionSubnetACL:
+    Type: AWS::EC2::NetworkAcl
+    Properties:
+      VpcId: 
+        Ref: "Vpc"
+      Tags: 
+        - 
+          Key: "Name"
+          Value: "AutomatedAbstractionSubnetACL"
+
+  CuratedAbstractionSubnetACL:
+    Type: AWS::EC2::NetworkAcl
+    Properties:
+      VpcId: 
+        Ref: "Vpc"
+      Tags: 
+        - 
+          Key: "Name"
+          Value: "CuratedAbstractionSubnetACL"
+
+  DataExtractionSubnetACL:
+    Type: AWS::EC2::NetworkAcl
+    Properties:
+      VpcId: 
+        Ref: "Vpc"
+      Tags: 
+        - 
+          Key: "Name"
+          Value: "DataExtractionSubnetACL"
+
+  DatabaseSubnetACL:
+    Type: AWS::EC2::NetworkAcl
+    Properties:
+      VpcId: 
+        Ref: "Vpc"
+      Tags: 
+        - 
+          Key: "Name"
+          Value: "DatabaseSubnetACL"
+
+  ManagementSubnetACL:
+    Type: AWS::EC2::NetworkAcl
+    Properties:
+      VpcId: 
+        Ref: "Vpc"
+      Tags: 
+        - 
+          Key: "Name"
+          Value: "ManagementSubnetACL"
+
+  InternetGateway:
+    Type: AWS::EC2::InternetGateway
+    Properties: 
+      Tags: 
+        - 
+          Key: "Name"
+          Value: "CentrellisInternetGateway"
+
+  VpcInternetGatewayAttachment: 
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      InternetGatewayId:
+        Ref: "InternetGateway"
+      VpcId:
+        Ref: "Vpc"
+
+  NAT1:
+    Type: AWS::EC2::NatGateway
+    DependsOn: VpcInternetGatewayAttachment
+    Properties:
+      AllocationId:
+         Fn::GetAtt:
+         - EIP1
+         - AllocationId
+      SubnetId:
+        Ref: PublicSubnet1
+      Tags:
+        - 
+          Key: Name
+          Value: NatGateway1
+      
+  EIP1:
+    Type: AWS::EC2::EIP
+    DependsOn: VpcInternetGatewayAttachment
+    Properties:
+      Domain: vpc
+
+  NatRoute1:
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId:
+         Ref: PublicRouteTable
+      DestinationCidrBlock: 0.0.0.0/0
+      NatGatewayId:
+       Ref: NAT1
+       
+  DatabaseSubnetGroup:
+    Type: AWS::RDS::DBSubnetGroup
+    Properties:
+      DBSubnetGroupDescription: redshift db subnet group
+      SubnetIds:
+        - Ref: DatabaseSubnet1
+        - Ref: DatabaseSubnet2
+        - Ref: DatabaseSubnet3
+
+  RedshiftDatabaseSubnetGroup:
+    Type: AWS::Redshift::ClusterSubnetGroup 
+    Properties:
+      Description: Database Subnet group for great justice
+      SubnetIds:
+        - Ref: DatabaseSubnet1
+        - Ref: DatabaseSubnet2
+        - Ref: DatabaseSubnet3
+      Tags:
+        -
+          Key: Name
+          Value: Redshift Database Security Group
+
+
+  PublicWebServerSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Public Webserver Security Group
+      VpcId:
+        Ref: Vpc
+      SecurityGroupIngress:
+        CidrIp: 10.0.0.0/16  
+        IpProtocol: TCP
+        FromPort: 0 
+        ToPort:  0
+
+
+
+  CuratedAbstractionWebServerSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: CuratedAbstraction Webserver Security Group
+      VpcId:
+        Ref: Vpc
+      SecurityGroupIngress:
+        CidrIp: 10.0.0.0/16  
+        IpProtocol: TCP
+        FromPort: 0 
+        ToPort:  0
+      Tags:
+        - 
+          Key: Name
+          Value: Curated Abstraction WebServer SecurityGroup
+
+  ClockworkOrangeSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Clockwork Orange Security Group
+      VpcId:
+        Ref: Vpc
+      SecurityGroupIngress:
+        CidrIp: 10.0.0.0/16  
+        IpProtocol: TCP
+        FromPort: 0 
+        ToPort:  0
+      Tags:
+        - 
+          Key: Name
+          Value: Clockwork Orange Security Group
+
+  MatillionSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Matillion Security Group
+      SecurityGroupIngress:
+        CidrIp: 10.0.0.0/16  
+        IpProtocol: TCP
+        FromPort: 0 
+        ToPort:  0
+      VpcId:
+        Ref: Vpc
+      Tags:
+        - 
+          Key: Name
+          Value: Matillion Security Group
+        
+  BatchJobSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Batch Jobs Security Group
+      SecurityGroupIngress:
+        CidrIp: 10.0.0.0/16  
+        IpProtocol: TCP
+        FromPort: 0 
+        ToPort:  0
+      VpcId:
+        Ref: Vpc
+      Tags:
+        - 
+          Key: Name
+          Value: Batch Job Security Group
+        
+  ComputeSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Compute Security Group
+      SecurityGroupIngress:
+        CidrIp: 10.0.0.0/16  
+        IpProtocol: TCP
+        FromPort: 0 
+        ToPort:  0
+      VpcId:
+        Ref: Vpc
+      Tags:
+        - 
+          Key: Name
+          Value: Compute Security Group
+
+  BastionHostSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Bastion Security Group
+      SecurityGroupIngress:
+        CidrIp: 10.0.0.0/16  
+        IpProtocol: TCP
+        FromPort: 0 
+        ToPort:  0
+      VpcId:
+        Ref: Vpc
+      Tags:
+        - 
+          Key: Name
+          Value: Bastion Security Group
+          
+  BastionELBSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Bastion ELB Security Group
+      SecurityGroupIngress:
+        CidrIp: 10.0.0.0/16  
+        IpProtocol: TCP
+        FromPort: 0 
+        ToPort:  0
+      VpcId:
+        Ref: Vpc
+      Tags:
+        - 
+          Key: Name
+          Value: Bastion ELB Security Group
+
+  CuratedAbstractionELBSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Curated Abstraction ELB Security Group
+      SecurityGroupIngress:
+        CidrIp: 10.0.0.0/16  
+        IpProtocol: TCP
+        FromPort: 0 
+        ToPort:  0
+      VpcId:
+        Ref: Vpc
+      Tags:
+        - 
+          Key: Name
+          Value: Curated Abstraction ELB Security Group
+
+  CuratedAbstractionDatabaseSecurityGroup:
+    Type: AWS::RDS::DBSecurityGroup
+    Properties:
+      GroupDescription: Curated Abstraction Databse Security Group
+      EC2VpcId:
+        Ref: Vpc
+      DBSecurityGroupIngress:     
+        -
+         EC2SecurityGroupId: 
+           Ref:  CuratedAbstractionWebServerSecurityGroup
+        -
+         EC2SecurityGroupId: 
+           Ref:
+             BastionHostSecurityGroup
+      Tags:
+        - 
+          Key: Name
+          Value: Curated Abstraction Database Security Group
+
+  PublicWebDatabaseSecurityGroup:
+    Type: AWS::RDS::DBSecurityGroup
+    Properties:
+      GroupDescription: Public Web Databse Security Group
+      EC2VpcId:
+        Ref: Vpc
+      DBSecurityGroupIngress:     
+        -
+         EC2SecurityGroupId: 
+           Ref: 
+             PublicWebServerSecurityGroup
+        -
+         EC2SecurityGroupId: 
+           Ref:
+             BastionHostSecurityGroup
+      Tags:
+        - 
+          Key: Name
+          Value: Public Web Database Security Group
+
+  PublicWebDatabaseInstance: 
+    Type: "AWS::RDS::DBInstance"   
+    Properties: 
+      AvailabilityZone: 
+        ? "Fn::GetAtt"
+        : 
+          - DatabaseSubnet1
+          - AvailabilityZone
+      DBInstanceClass: db.t3.micro	
+      MasterUsername: BrianEpstein
+      MasterUserPassword: fifthbeetle
+      DBSubnetGroupName: 
+        Ref: DatabaseSubnetGroup
+      Engine: mysql
+      EngineVersion: 5.7
+      PubliclyAccessible: "false"
+      AllocatedStorage: 2000
+      Tags:
+        - 
+          Key: Name
+          Value: Public Web Database Database Instance
+
+  CuratedAbstractionDatabaseInstance: 
+    Type: "AWS::RDS::DBInstance"   
+    Properties: 
+      AvailabilityZone: 
+        ? "Fn::GetAtt"
+        : 
+          - DatabaseSubnet1
+          - AvailabilityZone
+      DBInstanceClass: db.t3.micro	
+      MasterUsername: BrianEpstein
+      MasterUserPassword: fifthbeetle
+      DBSubnetGroupName: 
+        Ref: DatabaseSubnetGroup
+      Engine: mysql
+      EngineVersion: 5.7
+      PubliclyAccessible: "false"
+      AllocatedStorage: 2000
+      Tags:
+        - 
+          Key: Name
+          Value: Public Web Database Database Instance
+
+  RedshiftCluster:
+    Type: AWS::Redshift::Cluster
+    Properties:
+      ClusterType: multi-node
+      NumberOfNodes: 2
+      DBName: oracleredshiftchangename
+      MasterUserPassword: brianeDD11Dpstien
+      MasterUsername: fifthbeetle
+      PubliclyAccessible: false
+      NodeType: dc1.large
+      ClusterSubnetGroupName: 
+        Ref: RedshiftDatabaseSubnetGroup
+
+  BastionHostELB:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    Properties:
+      Name: BastionHostELB
+      Scheme: internal
+      SecurityGroups:
+        - Ref: BastionELBSecurityGroup
+      Subnets:
+        - Ref: ManagementJobSubnet1
+        - Ref: ManagementJobSubnet2
+        - Ref: ManagementJobSubnet3
+
+  BastionHostAutoScalingGroup:
+    Type: AWS::AutoScaling::AutoScalingGroup
+    Properties:
+      TargetGroupARNs:
+        - Ref: BastionHostTargetGroup
+      DesiredCapacity: 1
+      LaunchConfigurationName: !Ref BastionHostLaunchConfig
+      MinSize: 1
+      MaxSize: 1
+      VPCZoneIdentifier:
+        - Ref: ManagementJobSubnet1 
+        - Ref: ManagementJobSubnet2 
+        - Ref: ManagementJobSubnet3 
+      Tags:
+      - Key: Name
+        Value: Bastion Host AutoScaling Group Node
+        PropagateAtLaunch: true
+        
+    UpdatePolicy:
+      AutoScalingRollingUpdate:
+        MinInstancesInService: '1'
+        MaxBatchSize: '1'
+        
+  BastionHostTargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      Port: 22
+      Protocol: TCP
+      VpcId: 
+        Ref: "Vpc"
+
+  BastionHostLaunchConfig:
+    Type: AWS::AutoScaling::LaunchConfiguration
+    Properties:
+      AssociatePublicIpAddress: 'false'
+      IamInstanceProfile: !Ref BastionHostProfile
+      ImageId: !Ref LatestAmiId
+      InstanceType: t3.small
+      SecurityGroups:
+      - !Ref BastionHostSecurityGroup
+
+  BastionHostProfile:
+    Type: AWS::IAM::InstanceProfile
+    Properties:
+      Path: "/"
+      Roles:
+      - !Ref BastionHostRole
+
+  BastionHostRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service:
+            - ec2.amazonaws.com
+          Action:
+          - sts:AssumeRole
+      Path: "/"
+
+  UserPolicySessionManager:
+    Type: 'AWS::IAM::ManagedPolicy'
+    Properties:
+      ManagedPolicyName: UserPolicy-SessionManager
+      Description: >-
+        Policy for Users to start, stop and describe sessions with the AWS
+        Systems Manager Session Manager
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Sid: SessionManagerStartDescribe
+            Effect: Allow
+            Action:
+              - 'ssm:GetConnectionStatus'
+              - 'ssm:DescribeInstanceInformation'
+              - 'ssm:DescribeSessions'
+              - 'ssm:StartSession'
+              - 'ssm:DescribeInstanceProperties'
+            Resource: '*'
+          - Sid: SessionManagerTerminate
+            Effect: Allow
+            Action:
+              - 'ssm:TerminateSession'
+            Resource: 'arn:aws:ssm:*:*:session/${aws:username}-*'
+
+  EC2InstancePolicySessionManager:
+    Type: 'AWS::IAM::ManagedPolicy'
+    Properties:
+      ManagedPolicyName: EC2InstancePolicy-SessionManager
+      Description: >-
+        Policy for EC2 instance roles to enable AWS Systems Manager Session
+        Manager
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Sid: SessionManagerCore
+            Effect: Allow
+            Action:
+              - 'ec2messages:AcknowledgeMessage'
+              - 'ec2messages:DeleteMessage'
+              - 'ec2messages:FailMessage'
+              - 'ec2messages:GetEndpoint'
+              - 'ec2messages:GetMessages'
+              - 'ec2messages:SendReply'
+              - 'ssm:UpdateInstanceInformation'
+              - 'ssm:ListInstanceAssociations'
+              - 'ssmmessages:OpenDataChannel'
+              - 'ssmmessages:CreateDataChannel'
+              - 'ssmmessages:OpenControlChannel'
+              - 'ssmmessages:CreateControlChannel'
+            Resource: '*'
+          - Sid: SessionManagerLogWrite
+            Effect: Allow
+            Action:
+              - 's3:PutObject'
+              - 's3:PutObjectAcl'
+            Resource: !Join
+              - ''
+              - - 'arn:aws:s3:::ssm-session-manager-data-logs/'
+                - !Ref 'AWS::AccountId'
+                - /*
+          - Sid: SessionManagerLogGetEnc
+            Effect: Allow
+            Action:
+              - 's3:GetEncryptionConfiguration'
+            Resource: 'arn:aws:s3:::ssm-session-manager-data-logs'
+          - Sid: SessionManagerLogGenDataKey
+            Effect: Allow
+            Action:
+              - 'kms:GenerateDataKey'
+            Resource: '*'
+           
+  EC2InstanceRoleSessionManager:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      RoleName: EC2InstanceRole-SessionManager
+      Description: EC2 Instance access to the EC2InstancePolicy-SessionManager
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          -
+            Effect: "Allow"
+            Principal:
+              Service:
+                - "ec2.amazonaws.com"
+            Action:
+              - "sts:AssumeRole"
+      Path: "/"
+      ManagedPolicyArns:
+        - !Ref EC2InstancePolicySessionManager
+
+  EC2InstanceProfileSessionManager:
+    Type: AWS::IAM::InstanceProfile
+    Properties:
+      InstanceProfileName: EC2InstanceRole-SessionManager
+      Path: "/"
+      Roles:
+        - EC2InstanceRole-SessionManager
+    DependsOn: EC2InstanceRoleSessionManager
+
+  DataAbstractionS3Bucket:
+    Type: "AWS::S3::Bucket"
+    Properties:
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+
+  AutoAbstractionS3Bucket:
+    Type: "AWS::S3::Bucket"
+    Properties:
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+
+  CuratedAbstractionS3Bucket:
+    Type: "AWS::S3::Bucket"
+    Properties:
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+  WebS3Bucket:
+    Type: "AWS::S3::Bucket"
+    Properties:
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+
+
+  BastionInstance: 
+    Type: AWS::EC2::Instance
+    Properties: 
+      SubnetId:
+        Ref: ManagementJobSubnet1
+      ImageId: 
+        Ref: LatestAmiId 
+      BlockDeviceMappings: 
+      - DeviceName: "/dev/sdm"
+        Ebs: 
+          VolumeType: "io1"
+          Iops: "200"
+          DeleteOnTermination: "false"
+          VolumeSize: "20"
+      - DeviceName: "/dev/sdk"
+        NoDevice: {}
+
+  MatillionInstance: 
+    Type: AWS::EC2::Instance
+    Properties: 
+      SubnetId:
+        Ref: ManagementJobSubnet1
+      ImageId: 
+        Ref: LatestAmiId 
+      BlockDeviceMappings: 
+      - DeviceName: "/dev/sdm"
+        Ebs: 
+          VolumeType: "io1"
+          Iops: "200"
+          DeleteOnTermination: "false"
+          VolumeSize: "20"
+      - DeviceName: "/dev/sdk"
+        NoDevice: {}
+
+  ClockworkOrangeInstance: 
+    Type: AWS::EC2::Instance
+    Properties: 
+      SubnetId:
+        Ref: ManagementJobSubnet1
+      ImageId: 
+        Ref: LatestAmiId 
+      BlockDeviceMappings: 
+      - DeviceName: "/dev/sdm"
+        Ebs: 
+          VolumeType: "io1"
+          Iops: "200"
+          DeleteOnTermination: "false"
+          VolumeSize: "20"
+      - DeviceName: "/dev/sdk"
+        NoDevice: {}
+
+  BatchServiceRole: 
+    Type: "AWS::IAM::Role"
+    Properties: 
+      AssumeRolePolicyDocument: 
+        Version: "2012-10-17"
+        Statement: 
+          - 
+            Effect: "Allow"
+            Principal: 
+              Service: "batch.amazonaws.com"
+            Action: "sts:AssumeRole"
+      ManagedPolicyArns: 
+        - "arn:aws:iam::aws:policy/service-role/AWSBatchServiceRole"
+  IamInstanceProfile: 
+    Type: "AWS::IAM::InstanceProfile"
+    Properties: 
+      Roles: 
+        - 
+          Ref: "EcsInstanceRole"
+  EcsInstanceRole: 
+    Type: "AWS::IAM::Role"
+    Properties: 
+      AssumeRolePolicyDocument: 
+        Version: "2008-10-17"
+        Statement: 
+          - 
+            Sid: ""
+            Effect: "Allow"
+            Principal: 
+              Service: "ec2.amazonaws.com"
+            Action: "sts:AssumeRole"
+      ManagedPolicyArns: 
+        - "arn:aws:iam::aws:policy/service-role/AmazonEC2ContainerServiceforEC2Role"
+  SpotIamFleetRole: 
+    Type: "AWS::IAM::Role"
+    Properties: 
+      AssumeRolePolicyDocument: 
+        Version: "2012-10-17"
+        Statement: 
+          - 
+            Sid: ""
+            Effect: "Allow"
+            Principal: 
+              Service: "spotfleet.amazonaws.com"
+            Action: "sts:AssumeRole"
+      ManagedPolicyArns: 
+        - "arn:aws:iam::aws:policy/service-role/AmazonEC2SpotFleetAutoscaleRole"
+        - "arn:aws:iam::aws:policy/service-role/AmazonEC2SpotFleetTaggingRole"
+  SpotComputeEnvironment: 
+    Type: "AWS::Batch::ComputeEnvironment"
+    Properties: 
+      Type: "MANAGED"
+      ComputeResources: 
+        Type: "SPOT"
+        MinvCpus: 0
+        DesiredvCpus: 0
+        MaxvCpus: 64
+        InstanceTypes: 
+          - "optimal"
+        Subnets: 
+          - 
+            Ref: "BatchJobSubnet1"
+            Ref: "BatchJobSubnet2"
+            Ref: "BatchJobSubnet3"
+        SecurityGroupIds: 
+          - 
+            Ref: "BatchJobSecurityGroup"
+        InstanceRole: 
+          Ref: "IamInstanceProfile"
+        BidPercentage: 40
+        SpotIamFleetRole: 
+          Ref: "SpotIamFleetRole"
+      ServiceRole: 
+        Ref: "BatchServiceRole"
+        
+  MatillionRole: 
+    Properties: 
+      AssumeRolePolicyDocument: 
+        Statement: 
+          - 
+            Action: 
+              - "sts:AssumeRole"
+            Effect: "Allow"
+            Principal: 
+              Service: 
+                - "ec2.amazonaws.com"
+      Policies: 
+        - 
+          PolicyDocument: 
+            Statement: 
+              - 
+                Action: 
+                  - "redshift:DescribeClusters"
+                Effect: "Allow"
+                Resource: 
+                  - "*"
+                Sid: "StmtMinRedshift"
+              - 
+                Action: 
+                  - "s3:ListAllMyBuckets"
+                  - "s3:ListBucket"
+                  - "s3:GetObject"
+                  - "s3:PutObject"
+                  - "s3:DeleteObject"
+                  - "s3:GetBucketLocation"
+                Effect: "Allow"
+                Resource: 
+                  - "*"
+                Sid: "StmtMinS3"
+              - 
+                Action: 
+                  - "sqs:DeleteMessage"
+                  - "sqs:ListQueues"
+                  - "sqs:ReceiveMessage"
+                  - "sqs:SendMessage"
+                  - "sqs:GetQueueUrl"
+                Effect: "Allow"
+                Resource: 
+                  - "*"
+                Sid: "StmtMinSQS"
+              - 
+                Action: 
+                  - "rds:DescribeDBInstances"
+                Effect: "Allow"
+                Resource: 
+                  - "*"
+                Sid: "StmtMinRDS"
+              - 
+                Action: 
+                  - "ec2:CreateSnapshot"
+                  - "ec2:CreateTags"
+                  - "ec2:DescribeInstances"
+                  - "ec2:DescribeVolumes"
+                Effect: "Allow"
+                Resource: 
+                  - "*"
+                Sid: "StmtMinEC2"
+              - 
+                Action: 
+                  - "sns:ListTopics"
+                  - "sns:CreateTopic"
+                  - "sns:Publish"
+                Effect: "Allow"
+                Resource: 
+                  - "*"
+                Sid: "StmtMinSNS"
+              - 
+                Action: 
+                  - "cloudwatch:PutMetricData"
+                  - "cloudwatch:ListMetrics"
+                Effect: "Allow"
+                Resource: 
+                  - "*"
+                Sid: "StmtMinCloudwatch"
+              - 
+                Action: 
+                  - "kms:ListAliases"
+                  - "kms:Encrypt"
+                  - "kms:Decrypt"
+                Effect: "Allow"
+                Resource: 
+                  - "*"
+                Sid: "StmtMinKMS"
+              - 
+                Action: 
+                  - "dynamodb:ListTables"
+                  - "dynamodb:DescribeTable"
+                  - "dynamodb:Scan"
+                Effect: "Allow"
+                Resource: "*"
+                Sid: "StmtMinDynamoDB"
+              - 
+                Action: 
+                  - "dms:CreateEndpoint"
+                  - "dms:CreateReplicationTask"
+                  - "dms:DeleteEndpoint"
+                  - "dms:DeleteReplicationTask"
+                  - "dms:DescribeConnections"
+                  - "dms:DescribeEndpoints"
+                  - "dms:DescribeReplicationInstances"
+                  - "dms:DescribeReplicationTasks"
+                  - "dms:ModifyEndpoint"
+                  - "dms:StartReplicationTask"
+                  - "dms:StopReplicationTask"
+                  - "dms:TestConnection"
+                  - "ec2:DescribeRegions"
+                  - "iam:ListRoles"
+                  - "iam:PassRole"
+                  - "lambda:AddPermission"
+                  - "lambda:CreateFunction"
+                  - "lambda:DeleteFunction"
+                  - "lambda:GetFunction"
+                  - "lambda:GetPolicy"
+                  - "lambda:RemovePermission"
+                  - "lambda:UpdateFunctionCode"
+                  - "lambda:UpdateFunctionConfiguration"
+                  - "s3:GetBucketNotification"
+                  - "s3:ListAllMyBuckets"
+                  - "s3:PutBucketNotification"
+                  - "sqs:ChangeMessageVisibility"
+                  - "sqs:DeleteMessage"
+                  - "sqs:ListQueues"
+                  - "sqs:ReceiveMessage"
+                Effect: "Allow"
+                Resource: "*"
+                Sid: "CDCPermissions"
+          PolicyName: "MatillionRolePolicy"
+    Type: "AWS::IAM::Role"
+
