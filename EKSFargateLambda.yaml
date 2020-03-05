@@ -5,8 +5,10 @@ Parameters:
   ClusterName:
     Type: String
     Default: 'Fred'
-
+  CertificateArn: ''
 Resources:
+
+#NetworkResources
 
   eksServiceRole:
     Type: AWS::IAM::Role
@@ -47,14 +49,34 @@ Resources:
   eksClusterGenerator:
     Type: AWS::Lambda::Function
     Properties:
+     Environment:
+       Variables:
+         SubnetId0: !Ref ClusterSubnet0
+         SubnetId1: !Ref ClusterSubnet1
+         SubnetId2: !Ref ClusterSubnet2
+         SecurityGroup0
+         SecurityGroup1
+         SecurityGroup2
      Handler: index.handler
      Runtime: python3.6
      Role: !GetAtt eksClusterGeneratorExecutionRole.Arn
      Code:
       ZipFile: |
+        import cfnresponse
+        import awscli
+        import eksctl
         import boto3
-        client = boto3.client('cluster')
+        imoport os
 
+        CLUSTER_SUBNET_0 = os.environ["ClusterSubnet0"]
+        CLUSTER_SUBNET_1 = os.environ["ClusterSubnet1"]
+        CLUSTER_SUBNET_2 = os.environ["ClusterSubnet2"]
+        SECURITY_GROUP0 = os.environ["SecurityGroup0"]
+        SECURITY_GROUP1 = os.environ["SecurityGroup1"]
+        SECURITY_GROUP2 = os.environ["SecurityGroup2"]
+
+        client = boto3.client('cluster')
+ 
         response = client.create_cluster(
             name = !Ref ${ClusterName} 
             version = '1.4.9',
@@ -67,10 +89,11 @@ Resources:
                 ],
                  'securityGroupIds' : [
                     'sg-dcc5a891'
-                    ]
+                    ],
+                []
             }
         )
-
+ 
 Outputs:
 
   RoleArn:
